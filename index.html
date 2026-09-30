@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFB Team Asset Finder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1em;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 16px;
+            border: 2px solid #475569;
+            border-radius: 8px;
+            background: #1e293b;
+            color: #e2e8f0;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #60a5fa;
+        }
+
+        input[type="text"]::placeholder {
+            color: #64748b;
+        }
+
+        .filter-select {
+            padding: 12px 16px;
+            border: 2px solid #475569;
+            border-radius: 8px;
+            background: #1e293b;
+            color: #e2e8f0;
+            font-size: 1em;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #60a5fa;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 5px;
+            border: 2px solid #475569;
+            border-radius: 8px;
+            background: #1e293b;
+            padding: 5px;
+        }
+
+        .view-toggle button {
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            color: #e2e8f0;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .view-toggle button.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .view-toggle button:hover {
+            background: #334155;
+        }
+
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .teams-grid.list-view {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .team-card {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border-left: 5px solid #3b82f6;
+        }
+
+        .team-card[data-color] {
+            border-left: 5px solid;
+        }
+
+        .teams-grid.list-view .team-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+        }
+
+        .teams-grid.list-view .team-info {
+            flex: 1;
+        }
+
+        .teams-grid.list-view .button-container {
+            flex: 0 0 auto;
+            gap: 8px;
+            width: auto;
+        }
+
+        .teams-grid.list-view .copy-button, .teams-grid.list-view .view-button {
+            padding: 8px 12px;
+            white-space: nowrap;
+            flex: 0 1 auto;
+        }
+
+        .teams-grid.list-view .url-preview {
+            display: none;
+        }
+
+        .team-card:hover {
+            border-color: #60a5fa;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(96, 165, 250, 0.1);
+        }
+
+        .team-id {
+            display: inline-block;
+            background: #334155;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+
+        .team-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #f1f5f9;
+        }
+
+        .team-short {
+            color: #94a3b8;
+            font-size: 0.95em;
+            margin-bottom: 12px;
+        }
+
+        .team-location {
+            color: #64748b;
+            font-size: 0.9em;
+            margin-bottom: 16px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .copy-button, .view-button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95em;
+        }
+
+        .copy-button {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        }
+
+        .view-button {
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+        }
+
+        .copy-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .view-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .copy-button:active, .view-button:active {
+            transform: scale(0.98);
+        }
+
+        .copy-button.copied {
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+        }
+
+        .copy-button.copy-error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .url-preview {
+            background: #1e293b;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 0.8em;
+            color: #cbd5e1;
+            word-break: break-all;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .results-count {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            input[type="text"],
+            .filter-select {
+                width: 100%;
+            }
+
+            .teams-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏈 CFB Team Asset Finder</h1>
+            <p class="subtitle">Search college football teams and copy image asset URLs</p>
+        </header>
+
+        <div class="search-box">
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Search by team name, code, or location..."
+                autocomplete="off"
+            >
+            <select id="filterSelect" class="filter-select">
+                <option value="">All Teams</option>
+                <option value="power5">Power 5</option>
+                <option value="group5">Group of 5</option>
+                <option value="fcs">FCS</option>
+            </select>
+            <div class="view-toggle">
+                <button id="gridView">⊞ Grid</button>
+                <button id="listView" class="active">≡ List</button>
+            </div>
+        </div>
+
+        <div id="resultsCount" class="results-count"></div>
+        <div id="teamsContainer" class="teams-grid list-view"></div>
+        <div id="noResults" class="no-results" style="display: none;">No teams found. Try a different search.</div>
+    </div>
+
+    <script>
+        const teams = [
+            {id: 2675, code: 'CLEM', short: 'Tigers', full: 'Clemson Tigers', location: 'US_SC', category: 'power5', color: '#FF6600'},
+            {id: 2676, code: 'DUKE', short: 'Blue Devils', full: 'Duke Blue Devils', location: 'US_NC', category: 'power5', color: '#001A4D'},
+            {id: 2677, code: 'FSU', short: 'Seminoles', full: 'Florida State Seminoles', location: 'US_FL', category: 'power5', color: '#740001'},
+            {id: 2678, code: 'GT', short: 'Yellow Jackets', full: 'Georgia Tech Yellow Jackets', location: 'US_GA', category: 'power5', color: '#FFD700'},
+            {id: 2679, code: 'MD', short: 'Terrapins', full: 'Maryland Terrapins', location: 'US_MD', category: 'power5', color: '#E31C23'},
+            {id: 2680, code: 'UNC', short: 'Tar Heels', full: 'North Carolina Tar Heels', location: 'US_NC', category: 'power5', color: '#4B9CD9'},
+            {id: 2681, code: 'NCST', short: 'Wolfpack', full: 'North Carolina State Wolfpack', location: 'US_NC', category: 'power5', color: '#CC0000'},
+            {id: 2682, code: 'UVA', short: 'Cavaliers', full: 'Virginia Cavaliers', location: 'US_VA', category: 'power5', color: '#00205B'},
+            {id: 2683, code: 'WAKE', short: 'Demon Deacons', full: 'Wake Forest Demon Deacons', location: 'US_NC', category: 'power5', color: '#C4A000'},
+            {id: 2684, code: 'BC', short: 'Eagles', full: 'Boston College Eagles', location: 'US_MA', category: 'power5', color: '#930000'},
+            {id: 2685, code: 'MIA', short: 'Hurricanes', full: 'Miami (FL) Hurricanes', location: 'US_FL', category: 'power5', color: '#F47920'},
+            {id: 2686, code: 'PITT', short: 'Panthers', full: 'Pittsburgh Panthers', location: 'US_PA', category: 'power5', color: '#003366'},
+            {id: 2687, code: 'RUT', short: 'Scarlet Knights', full: 'Rutgers Scarlet Knights', location: 'US_NJ', category: 'power5', color: '#CC0000'},
+            {id: 2688, code: 'SYR', short: 'Orange', full: 'Syracuse Orange', location: 'US_NY', category: 'power5', color: '#FF6600'},
+            {id: 2689, code: 'TEMP', short: 'Owls', full: 'Temple Owls', location: 'US_PA', category: 'group5', color: '#8B0000'},
+            {id: 2690, code: 'VT', short: 'Hokies', full: 'Virginia Tech Hokies', location: 'US_VA', category: 'power5', color: '#7F0000'},
+            {id: 2691, code: 'WVU', short: 'Mountaineers', full: 'West Virginia Mountaineers', location: 'US_WV', category: 'power5', color: '#003366'},
+            {id: 2692, code: 'COLO', short: 'Buffaloes', full: 'Colorado Buffaloes', location: 'US_CO', category: 'power5', color: '#000000'},
+            {id: 2693, code: 'ISU', short: 'Cyclones', full: 'Iowa State Cyclones', location: 'US_IA', category: 'power5', color: '#CC0000'},
+            {id: 2694, code: 'KU', short: 'Jayhawks', full: 'Kansas Jayhawks', location: 'US_KS', category: 'power5', color: '#E8000B'},
+            {id: 2695, code: 'KSU', short: 'Wildcats', full: 'Kansas State Wildcats', location: 'US_KS', category: 'power5', color: '#512888'},
+            {id: 2696, code: 'MIZZ', short: 'Tigers', full: 'Missouri Tigers', location: 'US_MO', category: 'power5', color: '#000000'},
+            {id: 2697, code: 'NEB', short: 'Cornhuskers', full: 'Nebraska Cornhuskers', location: 'US_NE', category: 'power5', color: '#C60C30'},
+            {id: 2698, code: 'OU', short: 'Sooners', full: 'Oklahoma Sooners', location: 'US_OK', category: 'power5', color: '#CC0000'},
+            {id: 2699, code: 'OKST', short: 'Cowboys', full: 'Oklahoma State Cowboys', location: 'US_OK', category: 'power5', color: '#FF6600'},
+            {id: 2700, code: 'ILL', short: 'Fighting Illini', full: 'Illinois Fighting Illini', location: 'US_IL', category: 'power5', color: '#FF6600'},
+            {id: 2701, code: 'IND', short: 'Hoosiers', full: 'Indiana Hoosiers', location: 'US_IN', category: 'power5', color: '#860000'},
+            {id: 2702, code: 'IOWA', short: 'Hawkeyes', full: 'Iowa Hawkeyes', location: 'US_IA', category: 'power5', color: '#000000'},
+            {id: 2703, code: 'MICH', short: 'Wolverines', full: 'Michigan Wolverines', location: 'US_MI', category: 'power5', color: '#FFCC00'},
+            {id: 2704, code: 'MSU', short: 'Spartans', full: 'Michigan State Spartans', location: 'US_MI', category: 'power5', color: '#18453B'},
+            {id: 2705, code: 'MINN', short: 'Golden Gophers', full: 'Minnesota Golden Gophers', location: 'US_MN', category: 'power5', color: '#7A0000'},
+            {id: 2706, code: 'NW', short: 'Wildcats', full: 'Northwestern Wildcats', location: 'US_IL', category: 'power5', color: '#3E3E6D'},
+            {id: 2707, code: 'OSU', short: 'Buckeyes', full: 'Ohio State Buckeyes', location: 'US_OH', category: 'power5', color: '#CC0000'},
+            {id: 2708, code: 'PSU', short: 'Nittany Lions', full: 'Penn State Nittany Lions', location: 'US_PA', category: 'power5', color: '#001A3E'},
+            {id: 2709, code: 'PUR', short: 'Boilermakers', full: 'Purdue Boilermakers', location: 'US_IN', category: 'power5', color: '#D4AF37'},
+            {id: 2710, code: 'WIS', short: 'Badgers', full: 'Wisconsin Badgers', location: 'US_WI', category: 'power5', color: '#C6102E'},
+            {id: 2711, code: 'ARIZ', short: 'Wildcats', full: 'Arizona Wildcats', location: 'US_AZ', category: 'power5', color: '#8B0000'},
+            {id: 2712, code: 'ASU', short: 'Sun Devils', full: 'Arizona State Sun Devils', location: 'US_AZ', category: 'power5', color: '#8B3A62'},
+            {id: 2713, code: 'CAL', short: 'Golden Bears', full: 'California Golden Bears', location: 'US_CA', category: 'power5', color: '#003366'},
+            {id: 2714, code: 'ORE', short: 'Ducks', full: 'Oregon Ducks', location: 'US_OR', category: 'power5', color: '#00AA44'},
+            {id: 2715, code: 'ORST', short: 'Beavers', full: 'Oregon State Beavers', location: 'US_OR', category: 'power5', color: '#FF6600'},
+            {id: 2716, code: 'USC', short: 'Trojans', full: 'USC Trojans', location: 'US_CA', category: 'power5', color: '#990000'},
+            {id: 2717, code: 'STAN', short: 'Cardinal', full: 'Stanford Cardinal', location: 'US_CA', category: 'power5', color: '#8B0000'},
+            {id: 2718, code: 'UCLA', short: 'Bruins', full: 'UCLA Bruins', location: 'US_CA', category: 'power5', color: '#003366'},
+            {id: 2719, code: 'WASH', short: 'Huskies', full: 'Washington Huskies', location: 'US_WA', category: 'power5', color: '#4B0082'},
+            {id: 2720, code: 'WSU', short: 'Cougars', full: 'Washington State Cougars', location: 'US_WA', category: 'power5', color: '#981E32'},
+            {id: 2721, code: 'UF', short: 'Gators', full: 'Florida Gators', location: 'US_FL', category: 'power5', color: '#FF6600'},
+            {id: 2722, code: 'UGA', short: 'Bulldogs', full: 'Georgia Bulldogs', location: 'US_GA', category: 'power5', color: '#BA0021'},
+            {id: 2723, code: 'UK', short: 'Wildcats', full: 'Kentucky Wildcats', location: 'US_KY', category: 'power5', color: '#003399'},
+            {id: 2724, code: 'SCAR', short: 'Gamecocks', full: 'South Carolina Gamecocks', location: 'US_SC', category: 'power5', color: '#73003B'},
+            {id: 2725, code: 'TENN', short: 'Volunteers', full: 'Tennessee Volunteers', location: 'US_TN', category: 'power5', color: '#FF6600'},
+            {id: 2726, code: 'VAN', short: 'Commodores', full: 'Vanderbilt Commodores', location: 'US_TN', category: 'power5', color: '#000000'},
+            {id: 2727, code: 'BAMA', short: 'Crimson Tide', full: 'Alabama Crimson Tide', location: 'US_AL', category: 'power5', color: '#A50021'},
+            {id: 2728, code: 'ARK', short: 'Razorbacks', full: 'Arkansas Razorbacks', location: 'US_AR', category: 'power5', color: '#CC0000'},
+            {id: 2729, code: 'AUB', short: 'Tigers', full: 'Auburn Tigers', location: 'US_AL', category: 'power5', color: '#FF6600'},
+            {id: 2730, code: 'LSU', short: 'Tigers', full: 'LSU Tigers', location: 'US_LA', category: 'power5', color: '#512888'},
+            {id: 2731, code: 'MISS', short: 'Rebels', full: 'Ole Miss Rebels', location: 'US_MS', category: 'power5', color: '#C41E3A'},
+            {id: 2732, code: 'MSST', short: 'Bulldogs', full: 'Mississippi State Bulldogs', location: 'US_MS', category: 'power5', color: '#660000'},
+            {id: 2733, code: 'BAY', short: 'Bears', full: 'Baylor Bears', location: 'US_TX', category: 'power5', color: '#003333'},
+            {id: 2734, code: 'HOU', short: 'Cougars', full: 'Houston Cougars', location: 'US_TX', category: 'power5', color: '#EB6E1F'},
+            {id: 2735, code: 'RICE', short: 'Owls', full: 'Rice Owls', location: 'US_TX', category: 'group5', color: '#003366'},
+            {id: 2736, code: 'SMU', short: 'Mustangs', full: 'SMU Mustangs', location: 'US_TX', category: 'power5', color: '#CC0000'},
+            {id: 2737, code: 'TEX', short: 'Longhorns', full: 'Texas Longhorns', location: 'US_TX', category: 'power5', color: '#FF6600'},
+            {id: 2738, code: 'TXAM', short: 'Aggies', full: 'Texas A&M Aggies', location: 'US_TX', category: 'power5', color: '#500000'},
+            {id: 2739, code: 'TCU', short: 'Horned Frogs', full: 'TCU Horned Frogs', location: 'US_TX', category: 'power5', color: '#4B0082'},
+            {id: 2740, code: 'TTU', short: 'Red Raiders', full: 'Texas Tech Red Raiders', location: 'US_TX', category: 'power5', color: '#CC0000'},
+            {id: 2741, code: 'UTAH', short: 'Utes', full: 'Utah Utes', location: 'US_UT', category: 'power5', color: '#CC0000'},
+            {id: 2742, code: 'UTEP', short: 'Miners', full: 'UTEP Miners', location: 'US_TX', category: 'group5', color: '#003DA5'},
+            {id: 2743, code: 'CIN', short: 'Bearcats', full: 'Cincinnati Bearcats', location: 'US_OH', category: 'group5', color: '#E00000'},
+            {id: 2744, code: 'ECU', short: 'Pirates', full: 'East Carolina Pirates', location: 'US_NC', category: 'group5', color: '#00205B'},
+            {id: 2745, code: 'LOU', short: 'Cardinals', full: 'Louisville Cardinals', location: 'US_KY', category: 'group5', color: '#CC0000'},
+            {id: 2746, code: 'MEM', short: 'Tigers', full: 'Memphis Tigers', location: 'US_TN', category: 'group5', color: '#003366'},
+            {id: 2747, code: 'ND', short: 'Fighting Irish', full: 'Notre Dame Fighting Irish', location: 'US_IN', category: 'group5', color: '#00205B'},
+            {id: 2748, code: 'SMISS', short: 'Golden Eagles', full: 'Southern Miss Golden Eagles', location: 'US_MS', category: 'group5', color: '#FFD700'},
+            {id: 2749, code: 'TULN', short: 'Green Wave', full: 'Tulane Green Wave', location: 'US_LA', category: 'group5', color: '#00693C'},
+            {id: 2750, code: 'TULS', short: 'Golden Hurricane', full: 'Tulsa Golden Hurricane', location: 'US_OK', category: 'group5', color: '#FF6600'},
+            {id: 2751, code: 'MAR', short: 'Otters', full: 'Marshall Thundering Herd', location: 'US_WV', category: 'group5', color: '#004620'},
+            {id: 2752, code: 'CONN', short: 'Huskies', full: 'Connecticut Huskies', location: 'US_CT', category: 'group5', color: '#000066'},
+            {id: 2753, code: 'UAB', short: 'Blazers', full: 'UAB Blazers', location: 'US_AL', category: 'group5', color: '#00AA44'},
+            {id: 2754, code: 'UCF', short: 'Knights', full: 'UCF Knights', location: 'US_FL', category: 'group5', color: '#000000'},
+            {id: 2755, code: 'USF', short: 'Bulls', full: 'South Florida Bulls', location: 'US_FL', category: 'group5', color: '#00AA44'},
+            {id: 5748, code: 'BOIS', short: 'Broncos', full: 'Boise State Broncos', location: 'US_ID', category: 'group5', color: '#0033CC'},
+            {id: 5749, code: 'ID', short: 'Vandals', full: 'Idaho Vandals', location: 'US_ID', category: 'fcs', color: '#FFD700'},
+            {id: 5750, code: 'MTSU', short: 'Blue Raiders', full: 'Middle Tennessee Blue Raiders', location: 'US_TN', category: 'fcs', color: '#003366'},
+            {id: 5751, code: 'NTEX', short: 'Mean Green', full: 'North Texas Mean Green', location: 'US_TX', category: 'fcs', color: '#003366'},
+            {id: 5752, code: 'TXST', short: 'Bobcats', full: 'Texas State Bobcats', location: 'US_TX', category: 'fcs', color: '#663399'},
+            {id: 5753, code: 'MASS', short: 'Minutemen', full: 'UMass Minutemen', location: 'US_MA', category: 'fcs', color: '#8B0000'},
+            {id: 5754, code: 'BUF', short: 'Bulls', full: 'Buffalo Bulls', location: 'US_NY', category: 'fcs', color: '#00205B'},
+            {id: 5755, code: 'TROY', short: 'Trojans', full: 'Troy Trojans', location: 'US_AL', category: 'fcs', color: '#003366'},
+            {id: 5756, code: 'WKU', short: 'Hilltoppers', full: 'Western Kentucky Hilltoppers', location: 'US_KY', category: 'fcs', color: '#CC0000'},
+            {id: 5757, code: 'FAU', short: 'Owls', full: 'Florida Atlantic Owls', location: 'US_FL', category: 'fcs', color: '#003366'},
+            {id: 5758, code: 'FIU', short: 'Panthers', full: 'Florida International Panthers', location: 'US_FL', category: 'fcs', color: '#003366'},
+            {id: 5759, code: 'SALA', short: 'Roadrunners', full: 'Texas-San Antonio Roadrunners', location: 'US_TX', category: 'fcs', color: '#003366'},
+            {id: 5760, code: 'GAST', short: 'Panthers', full: 'Georgia State Panthers', location: 'US_GA', category: 'fcs', color: '#003366'},
+            {id: 5761, code: 'UTSA', short: 'Roadrunners', full: 'UTSA Roadrunners', location: 'US_TX', category: 'fcs', color: '#003366'},
+            {id: 7325, code: 'APST', short: 'Red Wolves', full: 'Arkansas State Red Wolves', location: 'US_AR', category: 'fcs', color: '#CC0000'},
+            {id: 7326, code: 'GSOU', short: 'Eagles', full: 'Georgia Southern Eagles', location: 'US_GA', category: 'fcs', color: '#003366'},
+            {id: 7327, code: 'ODU', short: 'Monarchs', full: 'Old Dominion Monarchs', location: 'US_VA', category: 'fcs', color: '#003366'},
+            {id: 9428, code: 'CHAR', short: '49ers', full: 'Charlotte 49ers', location: 'US_NC', category: 'fcs', color: '#003366'},
+            {id: 9599, code: 'CCU', short: 'Chanticleers', full: 'Coastal Carolina Chanticleers', location: 'US_SC', category: 'fcs', color: '#3B7EA1'},
+            {id: 9600, code: 'LIB', short: 'Flames', full: 'Liberty Flames', location: 'US_VA', category: 'fcs', color: '#003366'},
+            {id: 9604, code: 'FUR', short: 'Paladins', full: 'Furman Paladins', location: 'US_SC', category: 'fcs', color: '#4B0082'},
+            {id: 9605, code: 'APEAY', short: 'Governors', full: 'Austin Peay Governors', location: 'US_TN', category: 'fcs', color: '#8B0000'},
+            {id: 9606, code: 'SFA', short: 'Lumberjacks', full: 'Stephen F. Austin Lumberjacks', location: 'US_TX', category: 'fcs', color: '#663399'},
+            {id: 9608, code: 'SAM', short: 'Lumberjacks', full: 'Sam Houston Lumberjacks', location: 'US_TX', category: 'fcs', color: '#8B0000'},
+            {id: 9609, code: 'PORST', short: 'Vikings', full: 'Portland State Vikings', location: 'US_OR', category: 'fcs', color: '#003366'},
+            {id: 9610, code: 'ALAST', short: 'Nanooks', full: 'Alaska Nanooks', location: 'US_AK', category: 'fcs', color: '#FFC52F'},
+            {id: 9611, code: 'SAVST', short: 'Eagles', full: 'Savannah State Eagles', location: 'US_GA', category: 'fcs', color: '#003366'},
+            {id: 9612, code: 'W&M', short: 'Tribe', full: 'William & Mary Tribe', location: 'US_VA', category: 'fcs', color: '#006633'},
+            {id: 9613, code: 'SCST', short: 'Bulldogs', full: 'South Carolina State Bulldogs', location: 'US_SC', category: 'fcs', color: '#CC0000'},
+            {id: 9614, code: 'YSU', short: 'Penguins', full: 'Youngstown State Penguins', location: 'US_OH', category: 'fcs', color: '#CC0000'},
+            {id: 9615, code: 'SELA', short: 'Lions', full: 'Southeastern Louisiana Lions', location: 'US_LA', category: 'fcs', color: '#000000'},
+            {id: 9616, code: 'NDU', short: 'Fighting Sioux', full: 'North Dakota Fighting Hawks', location: 'US_ND', category: 'fcs', color: '#005500'},
+            {id: 9617, code: 'TTU2', short: 'Eagles', full: 'Texas Tech Red Raiders', location: 'US_TX', category: 'fcs', color: '#CC0000'},
+            {id: 9618, code: 'UCD', short: 'Aggies', full: 'UC Davis Aggies', location: 'US_CA', category: 'fcs', color: '#003366'},
+            {id: 9686, code: 'FAMU', short: 'Rattlers', full: 'Florida A&M Rattlers', location: 'US_FL', category: 'fcs', color: '#003333'},
+            {id: 9687, code: 'EWU', short: 'Eagles', full: 'Eastern Washington Eagles', location: 'US_WA', category: 'fcs', color: '#8B0000'},
+            {id: 10274, code: 'MOST', short: 'Lions', full: 'Montana State Lions', location: 'US_MT', category: 'fcs', color: '#003366'},
+            {id: 10275, code: 'HBU', short: 'Huskies', full: 'Houston Baptist Huskies', location: 'US_TX', category: 'fcs', color: '#003366'},
+            {id: 10276, code: 'EKU', short: 'Colonels', full: 'Eastern Kentucky Colonels', location: 'US_KY', category: 'fcs', color: '#8B0000'},
+            {id: 10286, code: 'CIT', short: 'Moros', full: 'The Citadel Bulldogs', location: 'US_SC', category: 'fcs', color: '#003366'},
+            {id: 10468, code: 'SDSU', short: 'Aztecs', full: 'San Diego State Aztecs', location: 'US_CA', category: 'fcs', color: '#000000'},
+            {id: 10469, code: 'NCU', short: 'Eagles', full: 'North Carolina Central Eagles', location: 'US_NC', category: 'fcs', color: '#8B0000'},
+            {id: 10470, code: 'SUU', short: 'Thunderbirds', full: 'Southern Utah Thunderbirds', location: 'US_UT', category: 'fcs', color: '#CC0000'},
+            {id: 10471, code: 'NCAT', short: 'Aggies', full: 'North Carolina A&T Aggies', location: 'US_NC', category: 'fcs', color: '#003366'},
+            {id: 10472, code: 'JXST', short: 'Gamecocks', full: 'Jacksonville State Gamecocks', location: 'US_AL', category: 'fcs', color: '#CC0000'},
+            {id: 10538, code: 'JMU', short: 'Dukes', full: 'James Madison Dukes', location: 'US_VA', category: 'fcs', color: '#4B0082'},
+            {id: 10575, code: 'IDST', short: 'Vandals', full: 'Idaho State Bengals', location: 'US_ID', category: 'fcs', color: '#003366'},
+            {id: 10576, code: 'DUQ', short: 'Dukes', full: 'Duquesne Dukes', location: 'US_PA', category: 'fcs', color: '#003366'},
+            {id: 10591, code: 'SHSU', short: 'Bearkats', full: 'Sam Houston State Bearkats', location: 'US_TX', category: 'fcs', color: '#8B0000'},
+            {id: 10643, code: 'BCU', short: 'Wildcats', full: 'Bethune-Cookman Wildcats', location: 'US_FL', category: 'fcs', color: '#003366'},
+            {id: 10644, code: 'INST', short: 'Saints', full: 'Incarnate Word Saints', location: 'US_TX', category: 'fcs', color: '#CC0000'},
+            {id: 10645, code: 'MURR', short: 'Racers', full: 'Murray State Racers', location: 'US_KY', category: 'fcs', color: '#003366'},
+            {id: 10659, code: 'KENN', short: 'Golden Flashes', full: 'Kent State Golden Flashes', location: 'US_OH', category: 'fcs', color: '#003366'},
+            {id: 10696, code: 'WEBST', short: 'Wildcats', full: 'Webster University Wildcats', location: 'US_MO', category: 'fcs', color: '#003366'},
+            {id: 10697, code: 'NDSU', short: 'Bison', full: 'North Dakota State Bison', location: 'US_ND', category: 'fcs', color: '#003333'},
+            {id: 10698, code: 'MOST2', short: 'Grizzlies', full: 'Montana Grizzlies', location: 'US_MT', category: 'fcs', color: '#CC0000'},
+            {id: 10712, code: 'DEL', short: 'Fightin Blue Hens', full: 'Delaware Fightin Blue Hens', location: 'US_DE', category: 'fcs', color: '#00205B'},
+            {id: 10789, code: 'SAC', short: 'Hornets', full: 'Sacramento State Hornets', location: 'US_CA', category: 'fcs', color: '#003366'},
+        ];
+
+        const searchInput = document.getElementById('searchInput');
+        const filterSelect = document.getElementById('filterSelect');
+        const teamsContainer = document.getElementById('teamsContainer');
+        const resultsCount = document.getElementById('resultsCount');
+        const noResults = document.getElementById('noResults');
+
+        function generateImageUrl(id) {
+            return `https://d17odppiik753x.cloudfront.net/playerimages/cfb/300x300/${id}.png`;
+        }
+
+        function renderTeams(teamsToRender) {
+            teamsContainer.innerHTML = '';
+
+            if (teamsToRender.length === 0) {
+                teamsContainer.style.display = 'none';
+                noResults.style.display = 'block';
+                resultsCount.textContent = '';
+                return;
+            }
+
+            teamsContainer.style.display = 'grid';
+            noResults.style.display = 'none';
+            resultsCount.textContent = `${teamsToRender.length} team${teamsToRender.length !== 1 ? 's' : ''} found`;
+
+            teamsToRender.forEach(team => {
+                const url = generateImageUrl(team.id);
+                const card = document.createElement('div');
+                card.className = 'team-card';
+                card.style.borderLeftColor = team.color;
+                card.innerHTML = `
+                    <div class="team-id">ID: ${team.id}</div>
+                    <div class="team-name">${team.full}</div>
+                    <div class="team-short">${team.code} • ${team.short}</div>
+                    <div class="team-location">${team.location}</div>
+                    <div class="button-container">
+                        <button class="copy-button" data-url="${url}" data-team="${team.full}">
+                            📋 Copy URL
+                        </button>
+                        <button class="view-button" data-url="${url}">
+                            👁️ View Image
+                        </button>
+                    </div>
+                    <div class="url-preview">${url}</div>
+                `;
+
+                const copyButton = card.querySelector('.copy-button');
+                const viewButton = card.querySelector('.view-button');
+
+                copyButton.addEventListener('click', async () => {
+                    let copied = false;
+
+                    // Try modern Clipboard API first
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        try {
+                            await navigator.clipboard.writeText(url);
+                            copied = true;
+                        } catch (err) {
+                            console.log('Clipboard API failed, trying fallback...');
+                        }
+                    }
+
+                    // Fallback: try older document.execCommand method
+                    if (!copied) {
+                        try {
+                            const textArea = document.createElement('textarea');
+                            textArea.value = url;
+                            textArea.style.position = 'fixed';
+                            textArea.style.opacity = '0';
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                            copied = true;
+                        } catch (err) {
+                            console.log('Fallback copy failed too');
+                        }
+                    }
+
+                    // Show success or fallback UI
+                    if (copied) {
+                        copyButton.textContent = '✓ Copied!';
+                        copyButton.classList.add('copied');
+                        setTimeout(() => {
+                            copyButton.textContent = '📋 Copy URL';
+                            copyButton.classList.remove('copied');
+                        }, 2000);
+                    } else {
+                        // Last resort: show text input for manual copy
+                        copyButton.textContent = '📝 Click to Copy';
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = url;
+                        input.style.position = 'fixed';
+                        input.style.opacity = '0';
+                        document.body.appendChild(input);
+                        input.select();
+                        input.focus();
+                        setTimeout(() => {
+                            document.body.removeChild(input);
+                            copyButton.textContent = '📋 Copy URL';
+                        }, 100);
+                    }
+                });
+
+                viewButton.addEventListener('click', () => {
+                    window.open(url, '_blank');
+                });
+
+                teamsContainer.appendChild(card);
+            });
+        }
+
+        function filterTeams() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const category = filterSelect.value;
+
+            const filtered = teams.filter(team => {
+                const matchesSearch =
+                    team.full.toLowerCase().includes(searchTerm) ||
+                    team.short.toLowerCase().includes(searchTerm) ||
+                    team.code.toLowerCase().includes(searchTerm) ||
+                    team.location.toLowerCase().includes(searchTerm) ||
+                    team.id.toString().includes(searchTerm);
+
+                const matchesCategory = !category || team.category === category;
+
+                return matchesSearch && matchesCategory;
+            });
+
+            renderTeams(filtered.sort((a, b) => a.full.localeCompare(b.full)));
+        }
+
+        searchInput.addEventListener('input', filterTeams);
+        filterSelect.addEventListener('change', filterTeams);
+
+        // View toggle buttons
+        const gridViewBtn = document.getElementById('gridView');
+        const listViewBtn = document.getElementById('listView');
+
+        gridViewBtn.addEventListener('click', () => {
+            teamsContainer.classList.remove('list-view');
+            gridViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+        });
+
+        listViewBtn.addEventListener('click', () => {
+            teamsContainer.classList.add('list-view');
+            listViewBtn.classList.add('active');
+            gridViewBtn.classList.remove('active');
+        });
+
+        renderTeams(teams.sort((a, b) => a.full.localeCompare(b.full)));
+    </script>
+</body>
+</html>
